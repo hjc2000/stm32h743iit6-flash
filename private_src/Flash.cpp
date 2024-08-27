@@ -1,5 +1,5 @@
 #include "Flash.h"
-#include <bsp-interface/di.h>
+#include <bsp-interface/di/interrupt.h>
 #include <stdexcept>
 
 hal::Flash::Flash()
