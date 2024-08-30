@@ -1,6 +1,8 @@
 #pragma once
 #include <atomic>
 #include <base/LockGuard.h>
+#include <base/SingletonGetter.h>
+#include <bsp-interface/di/interrupt.h>
 #include <bsp-interface/flash/IFlash.h>
 #include <hal.h>
 #include <task/BinarySemaphore.h>
@@ -28,8 +30,27 @@ namespace hal
     public:
         static Flash &Instance()
         {
-            static Flash o;
-            return o;
+            class Getter : public base::SingletonGetter<Flash>
+            {
+            public:
+                std::unique_ptr<Flash> Create() override
+                {
+                    return std::unique_ptr<Flash>{new Flash{}};
+                }
+
+                void Lock() override
+                {
+                    DI_InterruptSwitch().DisableGlobalInterrupt();
+                }
+
+                void Unlock() override
+                {
+                    DI_InterruptSwitch().EnableGlobalInterrupt();
+                }
+            };
+
+            Getter g;
+            return g.Instance();
         }
 
         /// @brief flash 的名称。
