@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
+#include <base/di/SingletonGetter.h>
 #include <base/LockGuard.h>
-#include <base/SingletonGetter.h>
 #include <bsp-interface/di/interrupt.h>
 #include <bsp-interface/flash/IFlash.h>
 #include <hal.h>
