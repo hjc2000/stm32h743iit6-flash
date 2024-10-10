@@ -52,7 +52,8 @@ uint32_t bsp::Flash::SectorIndexToDefine(int32_t index)
 
 bsp::Flash &bsp::Flash::Instance()
 {
-    class Getter : public base::SingletonGetter<Flash>
+    class Getter :
+        public base::SingletonGetter<Flash>
     {
     public:
         std::unique_ptr<Flash> Create() override
