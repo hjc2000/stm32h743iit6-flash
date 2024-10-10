@@ -4,9 +4,9 @@
 #include <base/di/SingletonGetter.h>
 #include <base/LockGuard.h>
 #include <bsp-interface/di/interrupt.h>
+#include <bsp-interface/di/task.h>
 #include <bsp-interface/flash/IFlash.h>
 #include <hal.h>
-#include <task/BinarySemaphore.h>
 
 extern "C"
 {
@@ -27,7 +27,7 @@ namespace bsp
         friend void ::HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue);
 
         std::atomic_bool _operation_failed = false;
-        task::BinarySemaphore _operation_completed;
+        std::shared_ptr<bsp::IBinarySemaphore> _operation_completed = DICreate_BinarySemaphore();
 
     public:
         static_function Flash &Instance();

@@ -173,7 +173,7 @@ void bsp::Flash::EraseBank(int32_t bank_index)
         throw std::runtime_error{"启动擦除流程失败"};
     }
 
-    _operation_completed.Acquire();
+    _operation_completed->Acquire();
     if (_operation_failed)
     {
         throw std::runtime_error{"擦除流程结束，出错了"};
@@ -267,7 +267,7 @@ void bsp::Flash::EraseSector(int32_t bank_index, int32_t sector_index)
         throw std::runtime_error{"启动擦除流程失败"};
     }
 
-    _operation_completed.Acquire();
+    _operation_completed->Acquire();
     if (_operation_failed)
     {
         throw std::runtime_error{"擦除流程结束，出错了"};
@@ -353,7 +353,7 @@ void bsp::Flash::Program(int32_t bank_index, size_t addr, uint8_t const *buffer)
         throw std::runtime_error{"启动编程时发生错误"};
     }
 
-    _operation_completed.Acquire();
+    _operation_completed->Acquire();
     if (_operation_failed)
     {
         throw std::runtime_error{"擦除流程结束，出错了"};
@@ -398,12 +398,12 @@ extern "C"
     void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue)
     {
         bsp::Flash::Instance()._operation_failed = false;
-        bsp::Flash::Instance()._operation_completed.ReleaseFromISR();
+        bsp::Flash::Instance()._operation_completed->ReleaseFromISR();
     }
 
     void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue)
     {
         bsp::Flash::Instance()._operation_failed = true;
-        bsp::Flash::Instance()._operation_completed.ReleaseFromISR();
+        bsp::Flash::Instance()._operation_completed->ReleaseFromISR();
     }
 }
