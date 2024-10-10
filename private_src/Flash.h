@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+#include <base/define.h>
 #include <base/di/SingletonGetter.h>
 #include <base/LockGuard.h>
 #include <bsp-interface/di/interrupt.h>
@@ -21,7 +22,7 @@ namespace bsp
     private:
         Flash();
 
-        static uint32_t SectorIndexToDefine(int32_t index);
+        static_function uint32_t SectorIndexToDefine(int32_t index);
         friend void ::HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue);
         friend void ::HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue);
 
@@ -29,7 +30,7 @@ namespace bsp
         task::BinarySemaphore _operation_completed;
 
     public:
-        static Flash &Instance();
+        static_function Flash &Instance();
 
         /// @brief flash 的名称。
         /// @return
