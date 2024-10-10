@@ -3,49 +3,48 @@
 #include <Flash.h>
 #include <map>
 
-base::IDictionary<std::string, bsp::IFlash *> const &DI_FlashCollection()
+namespace
 {
     class Initializer
     {
     private:
-        Initializer()
-        {
-            Add(&hal::Flash::Instance());
-        }
-
         void Add(bsp::IFlash *flash)
         {
-            _collection.Add(flash->Name(), flash);
+            _dic.Add(flash->Name(), flash);
         }
 
     public:
-        base::Dictionary<std::string, bsp::IFlash *> _collection;
-
-        static Initializer &Instance()
+        Initializer()
         {
-            class Getter : public base::SingletonGetter<Initializer>
-            {
-            public:
-                std::unique_ptr<Initializer> Create() override
-                {
-                    return std::unique_ptr<Initializer>{new Initializer{}};
-                }
-
-                void Lock() override
-                {
-                    DI_InterruptSwitch().DisableGlobalInterrupt();
-                }
-
-                void Unlock() override
-                {
-                    DI_InterruptSwitch().EnableGlobalInterrupt();
-                }
-            };
-
-            Getter g;
-            return g.Instance();
+            Add(&bsp::Flash::Instance());
         }
+
+        base::Dictionary<std::string, bsp::IFlash *> _dic;
     };
 
-    return Initializer::Instance()._collection;
+    class Getter :
+        public base::SingletonGetter<Initializer>
+    {
+    public:
+        std::unique_ptr<Initializer> Create() override
+        {
+            return std::unique_ptr<Initializer>{new Initializer{}};
+        }
+
+        void Lock() override
+        {
+            DI_InterruptSwitch().DisableGlobalInterrupt();
+        }
+
+        void Unlock() override
+        {
+            DI_InterruptSwitch().EnableGlobalInterrupt();
+        }
+    };
+} // namespace
+
+base::IDictionary<std::string, bsp::IFlash *> const &DI_FlashCollection()
+{
+    Getter g;
+    return g.Instance()._dic;
 }

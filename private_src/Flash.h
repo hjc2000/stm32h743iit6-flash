@@ -13,9 +13,10 @@ extern "C"
     void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue);
 }
 
-namespace hal
+namespace bsp
 {
-    class Flash : public bsp::IFlash
+    class Flash :
+        public bsp::IFlash
     {
     private:
         Flash();
@@ -28,30 +29,7 @@ namespace hal
         task::BinarySemaphore _operation_completed;
 
     public:
-        static Flash &Instance()
-        {
-            class Getter : public base::SingletonGetter<Flash>
-            {
-            public:
-                std::unique_ptr<Flash> Create() override
-                {
-                    return std::unique_ptr<Flash>{new Flash{}};
-                }
-
-                void Lock() override
-                {
-                    DI_InterruptSwitch().DisableGlobalInterrupt();
-                }
-
-                void Unlock() override
-                {
-                    DI_InterruptSwitch().EnableGlobalInterrupt();
-                }
-            };
-
-            Getter g;
-            return g.Instance();
-        }
+        static Flash &Instance();
 
         /// @brief flash 的名称。
         /// @return
@@ -123,4 +101,4 @@ namespace hal
         void Program_NoIT(int32_t bank_index, size_t addr, uint8_t const *buffer);
 #pragma endregion
     };
-} // namespace hal
+} // namespace bsp

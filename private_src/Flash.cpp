@@ -2,12 +2,12 @@
 #include <bsp-interface/di/interrupt.h>
 #include <stdexcept>
 
-hal::Flash::Flash()
+bsp::Flash::Flash()
 {
     DI_InterruptSwitch().EnableInterrupt(static_cast<uint32_t>(IRQn_Type::FLASH_IRQn));
 }
 
-uint32_t hal::Flash::SectorIndexToDefine(int32_t index)
+uint32_t bsp::Flash::SectorIndexToDefine(int32_t index)
 {
     switch (index)
     {
@@ -50,7 +50,32 @@ uint32_t hal::Flash::SectorIndexToDefine(int32_t index)
     }
 }
 
-void hal::Flash::Lock()
+bsp::Flash &bsp::Flash::Instance()
+{
+    class Getter : public base::SingletonGetter<Flash>
+    {
+    public:
+        std::unique_ptr<Flash> Create() override
+        {
+            return std::unique_ptr<Flash>{new Flash{}};
+        }
+
+        void Lock() override
+        {
+            DI_InterruptSwitch().DisableGlobalInterrupt();
+        }
+
+        void Unlock() override
+        {
+            DI_InterruptSwitch().EnableGlobalInterrupt();
+        }
+    };
+
+    Getter g;
+    return g.Instance();
+}
+
+void bsp::Flash::Lock()
 {
     HAL_StatusTypeDef result = HAL_FLASH_Lock();
     if (result != HAL_StatusTypeDef::HAL_OK)
@@ -59,7 +84,7 @@ void hal::Flash::Lock()
     }
 }
 
-void hal::Flash::Unlock()
+void bsp::Flash::Unlock()
 {
     HAL_StatusTypeDef result = HAL_FLASH_Unlock();
     if (result != HAL_StatusTypeDef::HAL_OK)
@@ -68,7 +93,7 @@ void hal::Flash::Unlock()
     }
 }
 
-size_t hal::Flash::GetBankBaseAddress(int32_t bank_index) const
+size_t bsp::Flash::GetBankBaseAddress(int32_t bank_index) const
 {
     switch (bank_index)
     {
@@ -87,7 +112,7 @@ size_t hal::Flash::GetBankBaseAddress(int32_t bank_index) const
     }
 }
 
-size_t hal::Flash::GetBankSize(int32_t bank_index) const
+size_t bsp::Flash::GetBankSize(int32_t bank_index) const
 {
     switch (bank_index)
     {
@@ -108,7 +133,7 @@ size_t hal::Flash::GetBankSize(int32_t bank_index) const
 
 #pragma region 擦除
 
-void hal::Flash::EraseBank(int32_t bank_index)
+void bsp::Flash::EraseBank(int32_t bank_index)
 {
     FLASH_EraseInitTypeDef def;
 
@@ -156,7 +181,7 @@ void hal::Flash::EraseBank(int32_t bank_index)
     SCB_CleanInvalidateDCache();
 }
 
-void hal::Flash::EraseBank_NoIT(int32_t bank_index)
+void bsp::Flash::EraseBank_NoIT(int32_t bank_index)
 {
     FLASH_EraseInitTypeDef def;
 
@@ -199,7 +224,7 @@ void hal::Flash::EraseBank_NoIT(int32_t bank_index)
     SCB_CleanInvalidateDCache();
 }
 
-void hal::Flash::EraseSector(int32_t bank_index, int32_t sector_index)
+void bsp::Flash::EraseSector(int32_t bank_index, int32_t sector_index)
 {
     FLASH_EraseInitTypeDef def;
 
@@ -250,7 +275,7 @@ void hal::Flash::EraseSector(int32_t bank_index, int32_t sector_index)
     SCB_CleanInvalidateDCache();
 }
 
-void hal::Flash::EraseSector_NoIT(int32_t bank_index, int32_t sector_index)
+void bsp::Flash::EraseSector_NoIT(int32_t bank_index, int32_t sector_index)
 {
     FLASH_EraseInitTypeDef def;
 
@@ -298,7 +323,7 @@ void hal::Flash::EraseSector_NoIT(int32_t bank_index, int32_t sector_index)
 
 #pragma endregion
 
-void hal::Flash::ReadBuffer(int32_t bank_index, size_t addr, uint8_t *buffer, int32_t count)
+void bsp::Flash::ReadBuffer(int32_t bank_index, size_t addr, uint8_t *buffer, int32_t count)
 {
     uint8_t *absolute_address = reinterpret_cast<uint8_t *>(GetAbsoluteAddress(bank_index, addr));
     std::copy(absolute_address, absolute_address + count, buffer);
@@ -306,7 +331,7 @@ void hal::Flash::ReadBuffer(int32_t bank_index, size_t addr, uint8_t *buffer, in
 
 #pragma region 编程
 
-void hal::Flash::Program(int32_t bank_index, size_t addr, uint8_t const *buffer)
+void bsp::Flash::Program(int32_t bank_index, size_t addr, uint8_t const *buffer)
 {
     if (addr % MinProgrammingUnit() != 0)
     {
@@ -336,7 +361,7 @@ void hal::Flash::Program(int32_t bank_index, size_t addr, uint8_t const *buffer)
     SCB_CleanInvalidateDCache();
 }
 
-void hal::Flash::Program_NoIT(int32_t bank_index, size_t addr, uint8_t const *buffer)
+void bsp::Flash::Program_NoIT(int32_t bank_index, size_t addr, uint8_t const *buffer)
 {
     if (addr % MinProgrammingUnit() != 0)
     {
@@ -371,13 +396,13 @@ extern "C"
 
     void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue)
     {
-        hal::Flash::Instance()._operation_failed = false;
-        hal::Flash::Instance()._operation_completed.ReleaseFromISR();
+        bsp::Flash::Instance()._operation_failed = false;
+        bsp::Flash::Instance()._operation_completed.ReleaseFromISR();
     }
 
     void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue)
     {
-        hal::Flash::Instance()._operation_failed = true;
-        hal::Flash::Instance()._operation_completed.ReleaseFromISR();
+        bsp::Flash::Instance()._operation_failed = true;
+        bsp::Flash::Instance()._operation_completed.ReleaseFromISR();
     }
 }
