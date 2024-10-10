@@ -1,9 +1,9 @@
-#include <base/container/Collection.h>
+#include <base/container/Dictionary.h>
 #include <bsp-interface/di/flash.h>
 #include <Flash.h>
 #include <map>
 
-base::ICollection<std::string, bsp::IFlash *> const &DI_FlashCollection()
+base::IDictionary<std::string, bsp::IFlash *> const &DI_FlashCollection()
 {
     class Initializer
     {
@@ -15,11 +15,11 @@ base::ICollection<std::string, bsp::IFlash *> const &DI_FlashCollection()
 
         void Add(bsp::IFlash *flash)
         {
-            _collection.Put(flash->Name(), flash);
+            _collection.Add(flash->Name(), flash);
         }
 
     public:
-        base::Collection<std::string, bsp::IFlash *> _collection;
+        base::Dictionary<std::string, bsp::IFlash *> _collection;
 
         static Initializer &Instance()
         {
