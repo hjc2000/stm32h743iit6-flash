@@ -50,6 +50,13 @@ namespace bsp
             return 2;
         }
 
+        /// @brief 一个扇区的大小。单位：字节。
+        /// @return
+        size_t SectorSize() const override
+        {
+            return static_cast<size_t>(128) << 10;
+        }
+
         /// @brief 获取指定 bank 的扇区数量。
         /// @param bank_index
         /// @return
@@ -62,11 +69,6 @@ namespace bsp
         /// @param bank_index
         /// @return
         size_t GetBankBaseAddress(int32_t bank_index) const override;
-
-        /// @brief 获取指定 bank 的大小。单位：字节。
-        /// @param bank_index
-        /// @return
-        virtual size_t GetBankSize(int32_t bank_index) const override;
 
         /// @brief flash 的最小编程单位。单位：字节。
         /// @note 最小单位是一次编程必须写入这么多字节，即使要写入的数据没有这么多，在一次
@@ -111,7 +113,7 @@ namespace bsp
         /// @param addr flash 中的数据相对于此 bank 的地址。
         /// @param buffer 要将 flash 中的数据写入此缓冲区。
         /// @param count 要读取多少个字节的数据。
-        void ReadBuffer(int32_t bank_index, size_t addr, uint8_t *buffer, int32_t count) override;
+        void Read(int32_t bank_index, size_t addr, uint8_t *buffer, int32_t count) override;
 
 #pragma region 编程
         /// @brief 编程

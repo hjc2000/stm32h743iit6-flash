@@ -113,25 +113,6 @@ size_t bsp::Flash::GetBankBaseAddress(int32_t bank_index) const
     }
 }
 
-size_t bsp::Flash::GetBankSize(int32_t bank_index) const
-{
-    switch (bank_index)
-    {
-    case 0:
-        {
-            return 0x080fffff - GetBankBaseAddress(0) + 1;
-        }
-    case 1:
-        {
-            return 0x081fffff - GetBankBaseAddress(1) + 1;
-        }
-    default:
-        {
-            throw std::out_of_range{"bank_index 超出范围"};
-        }
-    }
-}
-
 #pragma region 擦除
 
 void bsp::Flash::EraseBank(int32_t bank_index)
@@ -324,7 +305,7 @@ void bsp::Flash::EraseSector_NoIT(int32_t bank_index, int32_t sector_index)
 
 #pragma endregion
 
-void bsp::Flash::ReadBuffer(int32_t bank_index, size_t addr, uint8_t *buffer, int32_t count)
+void bsp::Flash::Read(int32_t bank_index, size_t addr, uint8_t *buffer, int32_t count)
 {
     uint8_t *absolute_address = reinterpret_cast<uint8_t *>(GetAbsoluteAddress(bank_index, addr));
     std::copy(absolute_address, absolute_address + count, buffer);
