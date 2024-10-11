@@ -80,9 +80,16 @@ namespace bsp
 #pragma region 擦除
         /// @brief 擦除一整个 bank。
         /// @note stm32h743 有 2 个 bank。典型用法是：bank1 用来存放程序，bank2 用来存放数据。
+        /// @warning bank_index 为 0 表示 bank1，索引为 1 表示 bank2。
         /// @param bank_index
         void EraseBank(int32_t bank_index) override;
 
+        /// @brief 擦除一整个 bank。
+        /// @note 本函数的实现方式是轮询标志位，不会使用中断和信号量。
+        /// @note stm32h743 有 2 个 bank。典型用法是：bank1 用来存放程序，bank2 用来存放数据。
+        /// @warning bank_index 为 0 表示 bank1，索引为 1 表示 bank2。
+        ///
+        /// @param bank_index
         void EraseBank_NoIT(int32_t bank_index);
 
         /// @brief 擦除指定 bank 的指定扇区。
@@ -91,14 +98,57 @@ namespace bsp
         void EraseSector(int32_t bank_index, int32_t sector_index);
         using bsp::IFlash::EraseSector;
 
+        /// @brief 擦除指定 bank 的指定扇区。
+        /// @note 本函数的实现方式是轮询标志位，不会使用中断和信号量。
+        ///
+        /// @param bank_index
+        /// @param sector_index 要擦除的扇区索引。
         void EraseSector_NoIT(int32_t bank_index, int32_t sector_index);
 #pragma endregion
 
+        /// @brief 从 flash 中读取数据，写入 buffer。
+        /// @param bank_index
+        /// @param addr flash 中的数据相对于此 bank 的地址。
+        /// @param buffer 要将 flash 中的数据写入此缓冲区。
+        /// @param count 要读取多少个字节的数据。
         void ReadBuffer(int32_t bank_index, size_t addr, uint8_t *buffer, int32_t count) override;
 
 #pragma region 编程
+        /// @brief 编程
+        ///
+        /// @param bank_index
+        ///
+        /// @param addr 要写入的数据相对于此 bank 的起始地址的地址。
+        /// @note 此地址必须能被 MinProgrammingUnit 整除。
+        ///
+        /// @param buffer 要写入到 flash 的数据所在的缓冲区。大小为 MinProgrammingUnit。
+        /// @note 底层在编程时，会读取并且只会读取 MinProgrammingUnit 个字节。
+        /// @warning buffer 的字节数必须 >= MinProgrammingUnit ，否则因为底层无论如何都会读取
+        /// MinProgrammingUnit 个字节，所以将发生内存访问越界。
+        /// @note 不同平台对 buffer 有对齐要求。例如 stm32 的 HAL 要求 buffer 要 4 字节
+        /// 对齐。这里使用 uint8_t const * ，接口的实现者自己计算 buffer 能否被对齐字节数整除，
+        /// 不能整除抛出异常。
+        /// @note 对于 4 字节对齐的情况，调用者可以创建 uint32_t 数组，然后
+        /// 将 uint32_t const * 强制转换为 uint8_t const * 作为 buffer 传进来。
         void Program(int32_t bank_index, size_t addr, uint8_t const *buffer) override;
 
+        /// @brief 编程
+        /// @note 本函数的实现方式是轮询标志位，不会使用中断和信号量。
+        ///
+        /// @param bank_index
+        ///
+        /// @param addr 要写入的数据相对于此 bank 的起始地址的地址。
+        /// @note 此地址必须能被 MinProgrammingUnit 整除。
+        ///
+        /// @param buffer 要写入到 flash 的数据所在的缓冲区。大小为 MinProgrammingUnit。
+        /// @note 底层在编程时，会读取并且只会读取 MinProgrammingUnit 个字节。
+        /// @warning buffer 的字节数必须 >= MinProgrammingUnit ，否则因为底层无论如何都会读取
+        /// MinProgrammingUnit 个字节，所以将发生内存访问越界。
+        /// @note 不同平台对 buffer 有对齐要求。例如 stm32 的 HAL 要求 buffer 要 4 字节
+        /// 对齐。这里使用 uint8_t const * ，接口的实现者自己计算 buffer 能否被对齐字节数整除，
+        /// 不能整除抛出异常。
+        /// @note 对于 4 字节对齐的情况，调用者可以创建 uint32_t 数组，然后
+        /// 将 uint32_t const * 强制转换为 uint8_t const * 作为 buffer 传进来。
         void Program_NoIT(int32_t bank_index, size_t addr, uint8_t const *buffer);
 #pragma endregion
     };
