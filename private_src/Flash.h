@@ -43,6 +43,8 @@ namespace bsp
         void Lock() override;
         void Unlock() override;
 
+#pragma region flash 参数
+
         /// @brief 获取此 flash 的 bank 数量。
         /// @return
         int32_t BankCount() const override
@@ -78,6 +80,8 @@ namespace bsp
         {
             return 32;
         }
+
+#pragma endregion
 
 #pragma region 擦除
         /// @brief 擦除一整个 bank。
