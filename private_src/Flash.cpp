@@ -2,6 +2,26 @@
 #include <bsp-interface/di/interrupt.h>
 #include <stdexcept>
 
+extern "C"
+{
+    void FLASH_IRQHandler()
+    {
+        HAL_FLASH_IRQHandler();
+    }
+
+    void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue)
+    {
+        bsp::Flash::Instance()._operation_failed = false;
+        bsp::Flash::Instance()._operation_completed->ReleaseFromISR();
+    }
+
+    void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue)
+    {
+        bsp::Flash::Instance()._operation_failed = true;
+        bsp::Flash::Instance()._operation_completed->ReleaseFromISR();
+    }
+}
+
 bsp::Flash::Flash()
 {
     DI_InterruptSwitch().EnableInterrupt(static_cast<uint32_t>(IRQn_Type::FLASH_IRQn));
@@ -82,6 +102,8 @@ std::string bsp::Flash::Name()
     return "internal-flash";
 }
 
+#pragma region 锁
+
 void bsp::Flash::Lock()
 {
     HAL_StatusTypeDef result = HAL_FLASH_Lock();
@@ -99,6 +121,10 @@ void bsp::Flash::Unlock()
         throw std::runtime_error{"解锁 flash 失败"};
     }
 }
+
+#pragma endregion
+
+#pragma region flash 参数
 
 size_t bsp::Flash::SectorSize() const
 {
@@ -119,6 +145,10 @@ int32_t bsp::Flash::MinProgrammingUnit() const
 {
     return 32;
 }
+
+#pragma endregion
+
+#pragma region 擦除
 
 void bsp::Flash::Erase()
 {
@@ -186,8 +216,6 @@ void bsp::Flash::EraseSector(int32_t sector_index)
     SCB_CleanInvalidateDCache();
 }
 
-#pragma region 擦除
-
 void bsp::Flash::EraseBank_NoIT()
 {
     FLASH_EraseInitTypeDef def;
@@ -244,6 +272,10 @@ void bsp::Flash::EraseSector_NoIT(int32_t sector_index)
     SCB_CleanInvalidateDCache();
 }
 
+#pragma endregion
+
+#pragma region 编程
+
 void bsp::Flash::Program(size_t addr, uint8_t const *buffer)
 {
     if (addr % MinProgrammingUnit() != 0)
@@ -274,10 +306,6 @@ void bsp::Flash::Program(size_t addr, uint8_t const *buffer)
     SCB_CleanInvalidateDCache();
 }
 
-#pragma endregion
-
-#pragma region 编程
-
 void bsp::Flash::Program_NoIT(size_t addr, uint8_t const *buffer)
 {
     if (addr % MinProgrammingUnit() != 0)
@@ -302,30 +330,10 @@ void bsp::Flash::Program_NoIT(size_t addr, uint8_t const *buffer)
     SCB_CleanInvalidateDCache();
 }
 
+#pragma endregion
+
 void bsp::Flash::Read(size_t addr, uint8_t *buffer, int32_t count)
 {
     uint8_t *absolute_address = reinterpret_cast<uint8_t *>(BaseAddress() + addr);
     std::copy(absolute_address, absolute_address + count, buffer);
-}
-
-#pragma endregion
-
-extern "C"
-{
-    void FLASH_IRQHandler()
-    {
-        HAL_FLASH_IRQHandler();
-    }
-
-    void HAL_FLASH_EndOfOperationCallback(uint32_t ReturnValue)
-    {
-        bsp::Flash::Instance()._operation_failed = false;
-        bsp::Flash::Instance()._operation_completed->ReleaseFromISR();
-    }
-
-    void HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue)
-    {
-        bsp::Flash::Instance()._operation_failed = true;
-        bsp::Flash::Instance()._operation_completed->ReleaseFromISR();
-    }
 }
