@@ -50,7 +50,7 @@ namespace bsp
 
         /// @brief 本 flash 映射到内存中的区域的基地址。
         /// @return
-        size_t BaseAddress() const override;
+        size_t BaseAddress() const;
 
         /// @brief flash 的最小编程单位。单位：字节。
         /// @note 最小单位是一次编程必须写入这么多字节，即使要写入的数据没有这么多，在一次
