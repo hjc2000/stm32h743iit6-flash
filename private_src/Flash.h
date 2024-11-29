@@ -17,7 +17,8 @@ extern "C"
 namespace bsp
 {
     class Flash :
-        public bsp::IFlash
+        public bsp::IFlash,
+        public base::ILock
     {
     private:
         Flash();

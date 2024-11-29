@@ -152,6 +152,7 @@ int32_t bsp::Flash::ProgrammingSize() const
 
 void bsp::Flash::Erase()
 {
+    base::UnlockGuard ul{*this};
     FLASH_EraseInitTypeDef def;
 
     // 擦除类型为 bank 擦除
@@ -184,6 +185,7 @@ void bsp::Flash::Erase()
 
 void bsp::Flash::EraseSector(int32_t sector_index)
 {
+    base::UnlockGuard ul{*this};
     FLASH_EraseInitTypeDef def;
 
     // 擦除类型为扇区擦除
@@ -218,6 +220,7 @@ void bsp::Flash::EraseSector(int32_t sector_index)
 
 void bsp::Flash::EraseBank_NoIT()
 {
+    base::UnlockGuard ul{*this};
     FLASH_EraseInitTypeDef def;
 
     // 擦除类型为 bank 擦除
@@ -245,6 +248,7 @@ void bsp::Flash::EraseBank_NoIT()
 
 void bsp::Flash::EraseSector_NoIT(int32_t sector_index)
 {
+    base::UnlockGuard ul{*this};
     FLASH_EraseInitTypeDef def;
 
     // 擦除类型为扇区擦除
@@ -278,6 +282,7 @@ void bsp::Flash::EraseSector_NoIT(int32_t sector_index)
 
 void bsp::Flash::Program(size_t addr, uint8_t const *buffer)
 {
+    base::UnlockGuard ul{*this};
     if (addr % ProgrammingSize() != 0)
     {
         throw std::invalid_argument{"addr 必须 32 字节对齐，即要能被 32 整除"};
@@ -308,6 +313,7 @@ void bsp::Flash::Program(size_t addr, uint8_t const *buffer)
 
 void bsp::Flash::Program_NoIT(size_t addr, uint8_t const *buffer)
 {
+    base::UnlockGuard ul{*this};
     if (addr % ProgrammingSize() != 0)
     {
         throw std::invalid_argument{"addr 必须 32 字节对齐，即要能被 32 整除"};
@@ -334,6 +340,7 @@ void bsp::Flash::Program_NoIT(size_t addr, uint8_t const *buffer)
 
 void bsp::Flash::Read(size_t addr, uint8_t *buffer, int32_t count)
 {
+    base::UnlockGuard ul{*this};
     uint8_t *absolute_address = reinterpret_cast<uint8_t *>(BaseAddress() + addr);
     std::copy(absolute_address, absolute_address + count, buffer);
 }
