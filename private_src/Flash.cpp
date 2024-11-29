@@ -96,12 +96,6 @@ bsp::Flash &bsp::Flash::Instance()
     return g.Instance();
 }
 
-std::string bsp::Flash::Name()
-{
-    // 片内 flash
-    return "internal-flash";
-}
-
 #pragma region 锁
 
 void bsp::Flash::Lock()
@@ -124,7 +118,13 @@ void bsp::Flash::Unlock()
 
 #pragma endregion
 
-#pragma region flash 参数
+#pragma region flash 信息，规格参数
+
+std::string bsp::Flash::Name()
+{
+    // 片内 flash
+    return "internal-flash";
+}
 
 size_t bsp::Flash::SectorSize() const
 {
@@ -141,7 +141,7 @@ size_t bsp::Flash::BaseAddress() const
     return 0x08100000;
 }
 
-int32_t bsp::Flash::MinProgrammingUnit() const
+int32_t bsp::Flash::ProgrammingSize() const
 {
     return 32;
 }
@@ -278,7 +278,7 @@ void bsp::Flash::EraseSector_NoIT(int32_t sector_index)
 
 void bsp::Flash::Program(size_t addr, uint8_t const *buffer)
 {
-    if (addr % MinProgrammingUnit() != 0)
+    if (addr % ProgrammingSize() != 0)
     {
         throw std::invalid_argument{"addr 必须 32 字节对齐，即要能被 32 整除"};
     }
@@ -308,7 +308,7 @@ void bsp::Flash::Program(size_t addr, uint8_t const *buffer)
 
 void bsp::Flash::Program_NoIT(size_t addr, uint8_t const *buffer)
 {
-    if (addr % MinProgrammingUnit() != 0)
+    if (addr % ProgrammingSize() != 0)
     {
         throw std::invalid_argument{"addr 必须 32 字节对齐，即要能被 32 整除"};
     }

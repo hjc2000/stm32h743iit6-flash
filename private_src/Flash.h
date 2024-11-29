@@ -32,14 +32,14 @@ namespace bsp
     public:
         static_function Flash &Instance();
 
+        void Lock() override;
+        void Unlock() override;
+
+#pragma region flash 信息，规格参数
         /// @brief flash 的名称。
         /// @return
         std::string Name() override;
 
-        void Lock() override;
-        void Unlock() override;
-
-#pragma region flash 参数
         /// @brief 一个扇区的大小。单位：字节。
         /// @return
         size_t SectorSize() const override;
@@ -56,7 +56,7 @@ namespace bsp
         /// @note 最小单位是一次编程必须写入这么多字节，即使要写入的数据没有这么多，在一次
         /// 写入后，整个单位大小的区域都无法再次写入了，除非擦除整个扇区。
         /// @return 返回此 flash 编程的最小单位。
-        int32_t MinProgrammingUnit() const override;
+        int32_t ProgrammingSize() const override;
 #pragma endregion
 
 #pragma region 擦除
