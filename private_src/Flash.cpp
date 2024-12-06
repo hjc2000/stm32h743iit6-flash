@@ -24,7 +24,7 @@ extern "C"
 
 bsp::Flash::Flash()
 {
-    DI_InterruptSwitch().EnableInterrupt(static_cast<uint32_t>(IRQn_Type::FLASH_IRQn));
+    DI_EnableInterrupt(static_cast<uint32_t>(IRQn_Type::FLASH_IRQn));
 }
 
 uint32_t bsp::Flash::SectorIndexToDefine(int32_t index)
