@@ -1,6 +1,5 @@
 #include <base/container/Dictionary.h>
 #include <bsp-interface/di/flash.h>
-#include <bsp-interface/di/task.h>
 #include <Flash.h>
 #include <map>
 
@@ -24,12 +23,22 @@ namespace
     };
 
     class Getter :
-        public bsp::TaskSingletonGetter<Initializer>
+        public base::SingletonGetter<Initializer>
     {
     public:
         std::unique_ptr<Initializer> Create() override
         {
             return std::unique_ptr<Initializer>{new Initializer{}};
+        }
+
+        void Lock() override
+        {
+            DI_DisableGlobalInterrupt();
+        }
+
+        void Unlock() override
+        {
+            DI_EnableGlobalInterrupt();
         }
     };
 } // namespace

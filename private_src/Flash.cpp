@@ -73,12 +73,22 @@ uint32_t bsp::Flash::SectorIndexToDefine(int32_t index)
 bsp::Flash &bsp::Flash::Instance()
 {
     class Getter :
-        public bsp::TaskSingletonGetter<Flash>
+        public base::SingletonGetter<Flash>
     {
     public:
         std::unique_ptr<Flash> Create() override
         {
             return std::unique_ptr<Flash>{new Flash{}};
+        }
+
+        void Lock() override
+        {
+            DI_DisableGlobalInterrupt();
+        }
+
+        void Unlock() override
+        {
+            DI_EnableGlobalInterrupt();
         }
     };
 
