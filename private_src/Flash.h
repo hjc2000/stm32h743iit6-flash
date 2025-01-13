@@ -1,7 +1,6 @@
 #pragma once
 #include <atomic>
 #include <base/define.h>
-#include <base/di/SingletonGetter.h>
 #include <base/LockGuard.h>
 #include <bsp-interface/di/interrupt.h>
 #include <bsp-interface/di/task.h>
