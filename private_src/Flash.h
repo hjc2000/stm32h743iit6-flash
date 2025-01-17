@@ -27,7 +27,7 @@ namespace bsp
         friend void ::HAL_FLASH_OperationErrorCallback(uint32_t ReturnValue);
 
         std::atomic_bool _operation_failed = false;
-        std::shared_ptr<bsp::IBinarySemaphore> _operation_completed = DICreate_BinarySemaphore();
+        std::shared_ptr<bsp::IBinarySemaphore> _operation_completed = bsp::di::task::CreateBinarySemaphore();
 
     public:
         static_function Flash &Instance();
